@@ -194,8 +194,8 @@ class J2534PassThru:
         if result == 0:
             _msg = bytes(ffi.unpack(msg.Data, msg.DataSize))
         ffi.release(msg)
-        if _msg is None:
-            raise Exception("PassThruReadMsgs failed")
+        if _msg is None and result not in [ErrorValue.ERR_BUFFER_EMPTY]:
+            raise Exception("PassThruReadMsgs failed", ErrorValue(result))
         return _msg
 
     def get_config(self, channel_id, parameter):
