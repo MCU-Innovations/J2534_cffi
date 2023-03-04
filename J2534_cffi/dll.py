@@ -1,7 +1,7 @@
 import cffi
 
 from .header import J2534_HEADER
-from .defines import IoctlIDValues, ProtocolID, FilterType, ErrorValue
+from .defines import IoctlIDValues, FilterType, ErrorValue
 
 
 ffi = cffi.FFI()
