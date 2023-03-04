@@ -96,11 +96,9 @@ class ConnectFlag(IntEnum):
 
 class FilterType(IntEnum):
     # J2534-1 v04.04 Filter Type Values
-    FLOW_CONTROL_FILTER = 0x01
-    PASS_FILTER = 0x02
-    BLOCK_FILTER = 0x03
-    # ISO15765_ADDR_FILTER = 0x04
-    # ISO15765_FLOW_CONTROL_FILTER = 0x05
+    PASS_FILTER = 0x01
+    BLOCK_FILTER = 0x02
+    FLOW_CONTROL_FILTER = 0x03
 
 
 class PinNumber(IntEnum):
