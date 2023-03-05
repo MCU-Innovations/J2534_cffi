@@ -49,7 +49,7 @@ def find_j2534_passthru_dlls():
     for device in _find_j2534_passthru_dlls_wow6432() + _find_j2534_passthru_dlls():
         if device[1] not in device_list:
             device_list[device[1]] = device
-    return device_list.values()
+    return list(device_list.values())
 
 
 if __name__ == "__main__":
