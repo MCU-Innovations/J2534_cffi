@@ -1,7 +1,13 @@
+import time
 import cffi
-
 from .header import J2534_HEADER
-from .defines import IoctlIDValues, FilterType, ErrorValue
+from .defines import IoctlIDValues, FilterType
+
+
+def wait(delta):
+    now = time.perf_counter()
+    while time.perf_counter() - now < delta:
+        continue
 
 
 ffi = cffi.FFI()
@@ -16,11 +22,11 @@ def build_msg(protocol_id, tx_flags, data=b"", arbid=None):
     msg.ExtraDataIndex = 0
     offset = 0
     if arbid is not None:
-        for b in arbid.to_bytes(4, "big"):
-            msg.Data[offset] = b
+        for byt in arbid.to_bytes(4, "big"):
+            msg.Data[offset] = byt
             offset += 1
-    for b in data:
-        msg.Data[offset] = b
+    for byt in data:
+        msg.Data[offset] = byt
         offset += 1
     msg.DataSize = offset
     return msg
@@ -60,11 +66,9 @@ class J2534PassThru:
             self.device_id, IoctlIDValues.READ_VBATT, ffi.NULL, voltage
         )
         if result == 0:
-            _voltage = voltage[0]
+            _voltage = voltage[0] / 1000.0
         ffi.release(voltage)
-        if _voltage is None:
-            raise Exception("PassThruIoctl failed")
-        return _voltage / 1000.0
+        return _voltage, result
 
     def read_version(self):
         _version = None
@@ -83,9 +87,7 @@ class J2534PassThru:
         ffi.release(firmware_version)
         ffi.release(dll_version)
         ffi.release(api_version)
-        if _version is None:
-            raise Exception("PassThruReadVersion failed")
-        return _version
+        return _version, result
 
     def connect(self, protocol_id, flags, baud_rate):
         _channel_id = None
@@ -96,28 +98,20 @@ class J2534PassThru:
         if result == 0:
             _channel_id = channel_id[0]
         ffi.release(channel_id)
-        if _channel_id is None:
-            raise Exception("PassThruConnect failed")
-        return _channel_id
+        return _channel_id, result
 
     def disconnect(self, channel_id):
-        result = self.dll.PassThruDisconnect(channel_id)
-        if result != 0:
-            raise Exception("PassThruDisconnect failed")
+        return None, self.dll.PassThruDisconnect(channel_id)
 
     def clear_periodic_msgs(self, channel_id):
-        result = self.dll.PassThruIoctl(
+        return None, self.dll.PassThruIoctl(
             channel_id, IoctlIDValues.CLEAR_PERIODIC_MSGS, ffi.NULL, ffi.NULL
         )
-        if result != 0:
-            raise Exception("PassThruIoctl failed")
 
     def clear_msg_filters(self, channel_id):
-        result = self.dll.PassThruIoctl(
+        return None, self.dll.PassThruIoctl(
             channel_id, IoctlIDValues.CLEAR_MSG_FILTERS, ffi.NULL, ffi.NULL
         )
-        if result != 0:
-            raise Exception("PassThruIoctl failed")
 
     def start_ecu_filter(
         self,
@@ -156,44 +150,35 @@ class J2534PassThru:
         if flow_control_msg != ffi.NULL:
             ffi.release(flow_control_msg)
         ffi.release(filter_id)
-        if _filter_id is None:
-            raise Exception("PassThruStartMsgFilter failed")
-        return _filter_id
+        return _filter_id, result
 
     def clear_rx_buffer(self, channel_id):
-        result = self.dll.PassThruIoctl(
+        return None, self.dll.PassThruIoctl(
             channel_id, IoctlIDValues.CLEAR_RX_BUFFER, ffi.NULL, ffi.NULL
         )
-        if result != 0:
-            raise Exception("PassThruIoctl failed")
 
     def clear_tx_buffer(self, channel_id):
-        result = self.dll.PassThruIoctl(
+        return None, self.dll.PassThruIoctl(
             channel_id, IoctlIDValues.CLEAR_TX_BUFFER, ffi.NULL, ffi.NULL
         )
-        if result != 0:
-            raise Exception("PassThruIoctl failed")
 
     def write_msg(self, channel_id, msg, timeout):
         num_msgs = ffi.new("unsigned long *", 1)
         result = self.dll.PassThruWriteMsgs(channel_id, msg, num_msgs, timeout)
         ffi.release(num_msgs)
         ffi.release(msg)
-        if result != 0:
-            raise Exception("PassThruWriteMsgs failed")
+        return None, result
 
     def read_msg(self, channel_id, timeout):
         _msg = None
         msg = ffi.new("PASSTHRU_MSG *")
         num_msgs = ffi.new("unsigned long *", 1)
         result = self.dll.PassThruReadMsgs(channel_id, msg, num_msgs, timeout)
-        ffi.release(num_msgs)
         if result == 0:
             _msg = bytes(ffi.unpack(msg.Data, msg.DataSize))
+        ffi.release(num_msgs)
         ffi.release(msg)
-        if _msg is None and result not in [ErrorValue.ERR_BUFFER_EMPTY]:
-            raise Exception("PassThruReadMsgs failed", ErrorValue(result))
-        return _msg
+        return _msg, result
 
     def get_config(self, channel_id, parameter):
         _value = None
@@ -209,9 +194,7 @@ class J2534PassThru:
             _value = sconfig.Value
         ffi.release(sconfig)
         ffi.release(sconfig_list)
-        if _value is None:
-            raise Exception("PassThruIoctl failed", ErrorValue(result))
-        return _value
+        return _value, result
 
     def set_config(self, channel_id, parameter, value):
         sconfig = ffi.new("SCONFIG *", (parameter, value))
@@ -222,8 +205,7 @@ class J2534PassThru:
             sconfig_list,
             ffi.NULL,
         )
-        if result != 0:
-            raise Exception("PassThruIoctl failed", ErrorValue(result))
+        return None, result
 
     # UNTESTED BELOW THIS LINE
 
@@ -234,18 +216,14 @@ class J2534PassThru:
             channel_id, IoctlIDValues.READ_PROG_VOLTAGE, ffi.NULL, voltage
         )
         if result == 0:
-            _voltage = voltage[0]
+            _voltage = voltage[0] / 1000.0
         ffi.release(voltage)
-        if _voltage is None:
-            raise Exception("PassThruIoctl failed")
-        return _voltage / 1000.0
+        return _voltage, result
 
     def clear_funct_msg_lookup_table(self, channel_id):
-        result = self.dll.PassThruIoctl(
+        return None, self.dll.PassThruIoctl(
             channel_id,
             IoctlIDValues.CLEAR_FUNCT_MSG_LOOKUP_TABLE,
             ffi.NULL,
             ffi.NULL,
         )
-        if result != 0:
-            raise Exception("PassThruIoctl failed")

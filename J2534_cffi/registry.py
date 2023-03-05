@@ -1,5 +1,4 @@
 import winreg
-import sys
 
 
 def __find_j2534_passthru_dlls(base_key):
@@ -16,12 +15,12 @@ def __find_j2534_passthru_dlls(base_key):
             tool_list.append([name, function_library])
             tool_info.append([idx, vendor, name, function_library])
             j2534_registry_info.append(tool_info)
-    except:
+    except Exception:
         pass
     return tool_list
 
 
-def _find_j2534_passthru_dlls_WOW6432():
+def _find_j2534_passthru_dlls_wow6432():
     try:
         base_key = winreg.OpenKeyEx(
             winreg.HKEY_LOCAL_MACHINE,
@@ -29,7 +28,7 @@ def _find_j2534_passthru_dlls_WOW6432():
             access=winreg.KEY_READ | winreg.KEY_WOW64_64KEY,
         )
         return __find_j2534_passthru_dlls(base_key)
-    except:
+    except Exception:
         pass
     return []
 
@@ -40,14 +39,14 @@ def _find_j2534_passthru_dlls():
             winreg.HKEY_LOCAL_MACHINE, r"Software\\PassThruSupport.04.04\\"
         )
         return __find_j2534_passthru_dlls(base_key)
-    except:
+    except Exception:
         pass
     return []
 
 
 def find_j2534_passthru_dlls():
     device_list = {}
-    for device in _find_j2534_passthru_dlls_WOW6432() + _find_j2534_passthru_dlls():
+    for device in _find_j2534_passthru_dlls_wow6432() + _find_j2534_passthru_dlls():
         if device[1] not in device_list:
             device_list[device[1]] = device
     return device_list.values()
