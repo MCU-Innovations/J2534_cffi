@@ -1,6 +1,6 @@
 # j2534_cffi
 
-This is an attempt to create a non-half-assesd J2534 library for Python using CFFI.
+This is an attempt to create a non-half-assed J2534 library for Python using CFFI.
 
 ## Usage
 
