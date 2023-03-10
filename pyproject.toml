@@ -1,3 +1,21 @@
+[project]
+name = "j2534_cffi"
+dynamic = ["version"]
+description = "Python wrapper for J2534 DLLs using cffi"
+readme = "README.md"
+authors = [{ name = "Ryan Hope" }, { email = "ryan.hope@mcuinnovations.com" }]
+maintainers = [
+    { name = "Ryan Hope" },
+    { email = "ryan.hope@mcuinnovations.com" },
+]
+dependencies = ["cffi"]
+
+[project.urls]
+repository = "https://github.com/MCU-Innovations/j2534_cffi"
+
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+write_to = "j2534_cffi/_version.py"
