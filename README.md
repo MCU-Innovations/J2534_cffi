@@ -7,11 +7,13 @@ This is an attempt to create a non-half-assed J2534 library for Python using CFF
 ### Find available interfaces
 Scans the Windows registry for installed PassThruSupport.04.04 interfaces
 ```
->>> from j2534_cffi import find_j2534_passthru_dlls
->>>
->>> for iface in find_j2534_passthru_dlls():
-...     print(iface)
-...
+from j2534_cffi import find_j2534_passthru_dlls
+
+for iface in find_j2534_passthru_dlls():
+    print(iface)
+```
+_Example output:_
+```
 ['6513-Honda', 'C:\\Program Files (x86)\\Bosch\\VTX-VCI\\VCI Software (6513-Honda)\\Products\\6513-Honda\\Dynamic Link Libraries\\BVTX4J32.dll']
 ['Intrepid neoOBD2Pro', 'C:\\WINDOWS\\system32\\icsJ2534neoOBD2Pro.dll']
 ['Intrepid neoVI Fire/Red', 'C:\\WINDOWS\\system32\\icsJ2534Fire.dll']
@@ -37,11 +39,75 @@ Scans the Windows registry for installed PassThruSupport.04.04 interfaces
 ### Open an interface
 Load a J2534 interface by path; can be a dll listed in the registry or from a custom path.
 ```
->>> from j2534_cffi import J2534PassThru
->>> dll_path = "drivers/op20pt64.dll"
->>> iface = J2534PassThru(dll_path)
->>> iface.dll
-<cffi.api._make_ffi_library.<locals>.FFILibrary object at 0x0000011888F73760>
->>> iface.device_id
-1
+from j2534_cffi import J2534PassThru
+dll_path = "drivers/op20pt64.dll"
+iface = J2534PassThru(dll_path)
+```
+
+### Get interface version info
+```
+iface.read_version()
+```
+_Example output:_
+```
+(('1.17.4877', '1.02.4943 Dec 10 2020 19:47:43', '04.04'), <ErrorValue.STATUS_NOERROR: 0>)
+```
+
+### Get battery voltage
+```
+iface.read_vbatt()
+```
+_Example output:_
+```
+(12.504, <ErrorValue.STATUS_NOERROR: 0>)
+```
+
+### Establish a K-Line connection
+```
+from j2534_cffi.defines import ProtocolID, ConnectFlag, BaudRate
+
+protocol = ProtocolID.ISO9141
+cnflags = ConnectFlag.ISO9141_NO_CHECKSUM | ConnectFlag.ISO9141_K_LINE_ONLY
+baudrate = BaudRate.ISO9141_10400
+
+channel_id, status = iface.connect(protocol, cnflags, baudrate)
+```
+
+### Start a pass-all message filter (K-line)
+```
+from j2534_cffi.defines import FilterType
+
+iface.start_ecu_filter(
+    channel_id,
+    protocol,
+    0x00000000,
+    0x00000000,
+    tx_flags=0,
+    filter_type=FilterType.PASS_FILTER,
+)
+```
+
+### Establish a CAN connection
+```
+from j2534_cffi.defines import ProtocolID, ConnectFlag, TxFlag, BaudRate
+
+protocol = ProtocolID.ISO15765
+cnflags = ConnectFlag.CAN_29BIT_ID
+baudrate = BaudRate.CAN_500K
+channel_id, status = iface.connect(protocol, cnflags, baudrate)
+```
+
+### Start a flow-control message filter (CAN)
+```
+ta_phy=0x10
+sa_phy=0xF1
+
+iface.start_ecu_filter(
+    channel_id,
+    protocol,
+    0xFFFFFFFF,
+    0x18DA0000 | sa_phy << 8) | ta_phy,
+    0x18DA0000 | ta_phy << 8) | sa_phy,
+    tx_flags=0,
+)
 ```
