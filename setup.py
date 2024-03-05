@@ -6,7 +6,6 @@ def custom_version_scheme(version):
   return f"{version.tag}.{version.distance}"
 
 def custom_local_scheme(version):
-    print(version)
     return "+dirty" if version.dirty else ""
 
 
