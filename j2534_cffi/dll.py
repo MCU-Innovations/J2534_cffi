@@ -236,18 +236,23 @@ class J2534PassThru:
         )
         return None, result
 
-    def fast_init(self, channel_id, protocol_id, tx_flags):
-        msg = self.__build_msg(protocol_id, tx_flags)
+    def fast_init(self, channel_id, protocol_id, tx_flags, data=b""):
+        _resp = None
+        msg = self.__build_msg(protocol_id, tx_flags, data=data)
+        resp = self.ffi.new("PASSTHRU_MSG *")
         result = ErrorValue(
             self.dll.PassThruIoctl(
                 channel_id,
                 IoctlIDValues.FAST_INIT,
                 msg,
-                self.ffi.NULL,
+                resp,
             )
         )
         self.ffi.release(msg)
-        return None, result
+        if result == 0:
+            _resp = bytes(self.ffi.unpack(resp.Data, resp.DataSize))
+        self.ffi.release(resp)
+        return _resp, result
 
     # UNTESTED BELOW THIS LINE
 

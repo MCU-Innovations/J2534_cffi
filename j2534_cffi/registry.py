@@ -18,8 +18,9 @@ def __find_j2534_passthru_dlls(base_key):
                 tool_list.append([name, function_library])
                 tool_info.append([idx, vendor, name, function_library])
                 j2534_registry_info.append(tool_info)
-    except Exception:
-        pass
+    except Exception as err:
+        if __debug__:
+            print("j2535_cffi", err)
     return tool_list
 
 
@@ -32,8 +33,9 @@ def _find_j2534_passthru_dlls_wow6432():
                 access=winreg.KEY_READ | winreg.KEY_WOW64_64KEY,
             )
             return __find_j2534_passthru_dlls(base_key)
-    except Exception:
-        pass
+    except Exception as err:
+        if __debug__:
+            print("j2535_cffi", err)
     return []
 
 
@@ -44,8 +46,9 @@ def _find_j2534_passthru_dlls():
                 winreg.HKEY_LOCAL_MACHINE, r"Software\\PassThruSupport.04.04\\"
             )
             return __find_j2534_passthru_dlls(base_key)
-    except Exception:
-        pass
+    except Exception as err:
+        if __debug__:
+            print("j2535_cffi", err)
     return []
 
 
