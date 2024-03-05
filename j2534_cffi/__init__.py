@@ -1,5 +1,5 @@
 try:
-    from ._version import __VERSION__
+    from ._version import __version__ as __VERSION__
 except:
     import os
     from setuptools_scm import get_version
