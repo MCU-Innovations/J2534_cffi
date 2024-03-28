@@ -1,9 +1,30 @@
+import os
+import sys
+import struct
 try:
     import winreg
 except:
     winreg = None
 
-def __find_j2534_passthru_dlls(base_key):
+if sys.maxsize > 2**32:
+    ALLOWED_MACHINES = [34404]
+else:
+    ALLOWED_MACHINES = [332]
+
+
+def test_dll(dll):
+    if os.path.isfile(dll):
+        with open(dll, "rb") as f:
+            if f.read(2) == b'MZ':
+                f.seek(60)
+                header_offset = struct.unpack("<L", f.read(4))[0]
+                f.seek(header_offset + 4)
+                if struct.unpack("<H", f.read(2))[0] in ALLOWED_MACHINES:
+                    return True
+    return False
+
+
+def _get_j2534_passthru_dlls(base_key):
     tool_info = []
     tool_list = []
     j2534_registry_info = []
@@ -24,40 +45,22 @@ def __find_j2534_passthru_dlls(base_key):
     return tool_list
 
 
-def _find_j2534_passthru_dlls_wow6432():
-    try:
-        if winreg:
-            base_key = winreg.OpenKeyEx(
-                winreg.HKEY_LOCAL_MACHINE,
-                r"Software\\WOW6432Node\\PassThruSupport.04.04\\",
-                access=winreg.KEY_READ | winreg.KEY_WOW64_64KEY,
-            )
-            return __find_j2534_passthru_dlls(base_key)
-    except Exception as err:
-        if __debug__:
-            print("j2535_cffi", err)
-    return []
-
-
-def _find_j2534_passthru_dlls():
-    try:
-        if winreg:
-            base_key = winreg.OpenKeyEx(
-                winreg.HKEY_LOCAL_MACHINE, r"Software\\PassThruSupport.04.04\\"
-            )
-            return __find_j2534_passthru_dlls(base_key)
-    except Exception as err:
-        if __debug__:
-            print("j2535_cffi", err)
-    return []
-
-
 def find_j2534_passthru_dlls():
-    device_list = {}
-    for device in _find_j2534_passthru_dlls_wow6432() + _find_j2534_passthru_dlls():
-        if device[1] not in device_list:
-            device_list[device[1]] = device
-    return list(device_list.values())
+    device_list = []
+    dlls = []
+    paths =  [r"Software\\WOW6432Node\\PassThruSupport.04.04\\", r"Software\\PassThruSupport.04.04\\"]
+    for path in paths:
+        base_key = winreg.OpenKeyEx(
+            winreg.HKEY_LOCAL_MACHINE,
+           path,
+            access=winreg.KEY_READ,
+        )
+        for name, dll in _get_j2534_passthru_dlls(base_key):
+            if test_dll(dll):
+                if dll not in dlls:
+                    dlls.append(dll)
+                    device_list.append((name, dll))
+    return device_list
 
 
 if __name__ == "__main__":
