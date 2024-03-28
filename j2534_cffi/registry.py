@@ -6,20 +6,14 @@ try:
 except:
     winreg = None
 
-if sys.maxsize > 2**32:
-    ALLOWED_MACHINES = [34404]
-else:
-    ALLOWED_MACHINES = [332]
-
-
-def test_dll(dll):
+def test_dll(dll, allowed=[]):
     if os.path.isfile(dll):
         with open(dll, "rb") as f:
             if f.read(2) == b'MZ':
                 f.seek(60)
                 header_offset = struct.unpack("<L", f.read(4))[0]
                 f.seek(header_offset + 4)
-                if struct.unpack("<H", f.read(2))[0] in ALLOWED_MACHINES:
+                if struct.unpack("<H", f.read(2))[0] in allowed:
                     return True
     return False
 
@@ -49,6 +43,7 @@ def find_j2534_passthru_dlls():
     device_list = []
     dlls = []
     paths =  [r"Software\\WOW6432Node\\PassThruSupport.04.04\\", r"Software\\PassThruSupport.04.04\\"]
+    allowed = [34404] if sys.maxsize > 2**32 else [332]
     for path in paths:
         base_key = winreg.OpenKeyEx(
             winreg.HKEY_LOCAL_MACHINE,
@@ -56,7 +51,7 @@ def find_j2534_passthru_dlls():
             access=winreg.KEY_READ,
         )
         for name, dll in _get_j2534_passthru_dlls(base_key):
-            if test_dll(dll):
+            if test_dll(dll, allowed=allowed):
                 if dll not in dlls:
                     dlls.append(dll)
                     device_list.append((name, dll))
