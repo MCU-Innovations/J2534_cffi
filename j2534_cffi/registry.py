@@ -35,7 +35,7 @@ def _get_j2534_passthru_dlls(base_key):
                 j2534_registry_info.append(tool_info)
     except Exception as err:
         if __debug__:
-            print("j2535_cffi", err)
+            print("j2535_cffi: _get_j2534_passthru_dlls", err)
     return tool_list
 
 
@@ -45,16 +45,22 @@ def find_j2534_passthru_dlls():
     paths =  [r"Software\\WOW6432Node\\PassThruSupport.04.04\\", r"Software\\PassThruSupport.04.04\\"]
     allowed = [34404] if sys.maxsize > 2**32 else [332]
     for path in paths:
-        base_key = winreg.OpenKeyEx(
-            winreg.HKEY_LOCAL_MACHINE,
-           path,
-            access=winreg.KEY_READ,
-        )
-        for name, dll in _get_j2534_passthru_dlls(base_key):
-            if test_dll(dll, allowed=allowed):
-                if dll not in dlls:
-                    dlls.append(dll)
-                    device_list.append((name, dll))
+        base_key = None
+        try:
+            base_key = winreg.OpenKeyEx(
+                winreg.HKEY_LOCAL_MACHINE,
+            path,
+                access=winreg.KEY_READ,
+            )
+        except Exception as err:
+            if __debug__:
+                print("j2535_cffi: find_j2534_passthru_dlls", err)
+        if base_key is not None:
+            for name, dll in _get_j2534_passthru_dlls(base_key):
+                if test_dll(dll, allowed=allowed):
+                    if dll not in dlls:
+                        dlls.append(dll)
+                        device_list.append((name, dll))
     return device_list
 
 
