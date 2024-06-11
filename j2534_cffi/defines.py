@@ -92,6 +92,7 @@ class ConnectFlag(IntEnum):
     ISO9141_NO_CHECKSUM = 0x0200
     CAN_ID_BOTH = 0x0800
     ISO9141_K_LINE_ONLY = 0x1000
+    SNIFF_MODE = 0x10000000 # OP2.0
 
 
 class FilterType(IntEnum):
