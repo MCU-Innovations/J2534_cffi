@@ -30,7 +30,18 @@ def _get_j2534_passthru_dlls(base_key):
                 name = winreg.QueryValueEx(device_key, "Name")[0]
                 function_library = winreg.QueryValueEx(device_key, "FunctionLibrary")[0]
                 vendor = winreg.QueryValueEx(device_key, "Vendor")[0]
-                tool_list.append([name, function_library])
+                protos = []
+                try:
+                    if winreg.QueryValueEx(device_key, "ISO14230")[0]:
+                        protos.append("kline")
+                except:
+                    pass
+                try:
+                    if winreg.QueryValueEx(device_key, "ISO15765")[0]:
+                        protos.append("can")
+                except:
+                    pass
+                tool_list.append([name, function_library, protos])
                 tool_info.append([idx, vendor, name, function_library])
                 j2534_registry_info.append(tool_info)
     except Exception as err:
@@ -56,14 +67,14 @@ def find_j2534_passthru_dlls():
             if __debug__:
                 print("j2535_cffi: find_j2534_passthru_dlls", err)
         if base_key is not None:
-            for name, dll in _get_j2534_passthru_dlls(base_key):
+            for name, dll, protos in _get_j2534_passthru_dlls(base_key):
                 if test_dll(dll, allowed=allowed):
                     if dll not in dlls:
                         dlls.append(dll)
-                        device_list.append((name, dll))
+                        device_list.append((name, dll, protos))
     return device_list
 
 
 if __name__ == "__main__":
     for i, dll in enumerate(find_j2534_passthru_dlls()):
-        print(f"{i}: {dll}")
+        print(f"{i}: {dll} ")
