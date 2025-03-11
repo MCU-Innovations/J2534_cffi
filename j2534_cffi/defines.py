@@ -256,3 +256,4 @@ class BaudRate(IntEnum):
     CAN_125K = 125000
     CAN_250K = 250000
     CAN_500K = 500000
+    CAN_1000K = 1000000
