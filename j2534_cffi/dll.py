@@ -1,6 +1,5 @@
 import time
 import cffi
-from _cffi_backend import _CDataBase
 from .header import J2534_HEADER
 from .defines import IoctlIDValues, FilterType, ErrorValue
 
@@ -19,7 +18,7 @@ class J2534PassThru:
         self.device_id = None
         self.dll = None
         self.dll = self.ffi.dlopen(self.dll_path)
-        device_id: _CDataBase = self.ffi.new("unsigned long *")
+        device_id = self.ffi.new("unsigned long *")
         result = ErrorValue(self.dll.PassThruOpen(self.ffi.NULL, device_id))
         if result == 0:
             self.device_id = device_id[0]
@@ -182,8 +181,8 @@ class J2534PassThru:
         )
 
     def write_msg(self, channel_id, protocol_id, tx_flags, data, arbid, timeout):
-        num_msgs: _CDataBase = self.ffi.new("unsigned long *", 1)
-        msg: _CDataBase = self.__build_msg(
+        num_msgs = self.ffi.new("unsigned long *", 1)
+        msg = self.__build_msg(
             protocol_id, tx_flags, data, arbid=arbid)
         result: ErrorValue = ErrorValue(
             self.dll.PassThruWriteMsgs(channel_id, msg, num_msgs, timeout)
