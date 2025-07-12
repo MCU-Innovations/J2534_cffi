@@ -84,6 +84,9 @@ class ErrorValue(IntEnum):
     ERR_NOT_UNIQUE = 0x18
     ERR_INVALID_BAUDRATE = 0x19
     ERR_INVALID_DEVICE_ID = 0x1A
+    # OP2.0 Tactrix specific
+    ERR_OEM_VOLTAGE_TOO_LOW = 0x78
+    ERR_OEM_VOLTAGE_TOO_HIGH = 0x77
 
 
 class ConnectFlag(IntEnum):
@@ -104,14 +107,23 @@ class FilterType(IntEnum):
 
 class PinNumber(IntEnum):
     # J2534-1 v04.04 Programming Voltage Pin Numbers
-    AUXILIARY_OUTPUT_PIN = 0x0
-    SAE_J1962_CONNECTOR_PIN_6 = 0x6
-    SAE_J1962_CONNECTOR_PIN_9 = 0x9
-    SAE_J1962_CONNECTOR_PIN_11 = 0xB
-    SAE_J1962_CONNECTOR_PIN_12 = 0xC
-    SAE_J1962_CONNECTOR_PIN_13 = 0xD
-    SAE_J1962_CONNECTOR_PIN_14 = 0xE
-    SAE_J1962_CONNECTOR_PIN_15 = 0xF
+    AUXILIARY_OUTPUT_PIN = 0        # aux jack	OP2.0: Supports GND and adj. voltage
+    SAE_J1962_CONNECTOR_PIN_01 = 1  # 			OP2.0: Supports GND and adj. voltage
+    SAE_J1962_CONNECTOR_PIN_02 = 2  # J1850P	OP2.0: Supports 5V and 8V
+    SAE_J1962_CONNECTOR_PIN_03 = 3  #			OP2.0: Supports GND and adj. voltage
+    SAE_J1962_CONNECTOR_PIN_04 = 4  # GND
+    SAE_J1962_CONNECTOR_PIN_05 = 5  # GND
+    SAE_J1962_CONNECTOR_PIN_06 = 6  # CAN
+    SAE_J1962_CONNECTOR_PIN_07 = 7  # KLINE		OP2.0: Supports GND
+    SAE_J1962_CONNECTOR_PIN_08 = 8  #			OP2.0: Supports reading voltage
+    SAE_J1962_CONNECTOR_PIN_09 = 9  #			OP2.0: Supports GND and adj. voltage
+    SAE_J1962_CONNECTOR_PIN_10 = 10 # J1850M	OP2.0: Supports GND
+    SAE_J1962_CONNECTOR_PIN_11 = 11 #			OP2.0: Supports GND and adj. voltage
+    SAE_J1962_CONNECTOR_PIN_12 = 12 #			OP2.0: Supports GND and adj. voltage
+    SAE_J1962_CONNECTOR_PIN_13 = 13 #			OP2.0: Supports GND and adj. voltage
+    SAE_J1962_CONNECTOR_PIN_14 = 14 # CAN
+    SAE_J1962_CONNECTOR_PIN_15 = 15 # L		OP2.0: Supports GND
+    SAE_J1962_CONNECTOR_PIN_16 = 16 # VBAT		OP2.0: Supports reading voltage
 
 
 class VoltageValue(IntEnum):

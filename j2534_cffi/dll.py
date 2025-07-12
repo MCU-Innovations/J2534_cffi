@@ -252,6 +252,18 @@ class J2534PassThru:
             _resp = bytes(self.ffi.unpack(resp.Data, resp.DataSize))
         self.ffi.release(resp)
         return _resp, result
+    
+    def set_programming_voltage(self, pin_number, voltage):
+        result = None
+        ret = False
+        if self.device_id is not None:
+            result = ErrorValue(
+                self.dll.PassThruSetProgrammingVoltage(
+                    self.device_id, pin_number, voltage
+                )
+            )
+            ret = (result == ErrorValue.STATUS_NOERROR)
+        return ret, result
 
     # UNTESTED BELOW THIS LINE
 
