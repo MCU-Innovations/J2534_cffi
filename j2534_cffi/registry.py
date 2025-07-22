@@ -3,7 +3,7 @@ import sys
 import struct
 try:
     import winreg
-except:
+except ImportError:
     winreg = None
 
 def test_dll(dll, allowed=[]):
@@ -34,12 +34,12 @@ def _get_j2534_passthru_dlls(base_key):
                 try:
                     if winreg.QueryValueEx(device_key, "ISO14230")[0]:
                         protos.append("kline")
-                except:
+                except Exception:
                     pass
                 try:
                     if winreg.QueryValueEx(device_key, "ISO15765")[0]:
                         protos.append("can")
-                except:
+                except Exception:
                     pass
                 tool_list.append([name, function_library, protos])
                 tool_info.append([idx, vendor, name, function_library])
