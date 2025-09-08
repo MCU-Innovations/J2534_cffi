@@ -65,7 +65,7 @@ def find_j2534_passthru_dlls():
             )
         except Exception as err:
             if __debug__:
-                print("j2535_cffi: find_j2534_passthru_dlls", err)
+                print(f"j2535_cffi: no registry entry for {path}")
         if base_key is not None:
             for name, dll, protos in _get_j2534_passthru_dlls(base_key):
                 if test_dll(dll, allowed=allowed):
